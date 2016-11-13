@@ -1,61 +1,124 @@
-﻿# Charger Winforms assembly
+﻿#------------------------------------------------------------------------------#
+# Programme:        src_connexion.ps1                                          #
+# Description:               #
+#                                                                              #
+# Auteurs:          Robert Bournival, Nicolas Lafranchise                      #
+# Date:             Dimanche 22-11-2016                                        #
+# Version PS:       5.1.14393.206                                              #
+#------------------------------------------------------------------------------#
+#-------------------------------- Importations --------------------------------#
+# Ajouter le type Windows Forms
 Add-Type –AssemblyName System.Windows.Forms 
+#--------------------------------- Fonctions ----------------------------------#
+function TestConnexion {
+  <#
+  .SYNOPSIS
+  Describe the function here
+  .DESCRIPTION
+  Describe the function in more detail
+  .EXAMPLE
+  Give an example of how to use it
+  .EXAMPLE
+  Give another example of how to use it
+  .PARAMETER computername
+  The computer name to query. Just one.
+  .PARAMETER logname
+  The name of a file to write failed computer names to. Defaults to errors.txt.
+  #>
+  param (
+      $source
+  )
+  return $(Test-Connection -Count 1 -Source $source 8.8.8.8)
+}
 
-# Créer la fenêtre principale
+if ($args.Count -eq 0)
+    {Write-Host ok}
+
+# Créer les objets
 $MainForm = New-Object System.Windows.Forms.Form
+$GroupBox = New-Object System.Windows.Forms.GroupBox
+$RadioButton1 = New-Object System.Windows.Forms.RadioButton 
+$RadioButton2 = New-Object System.Windows.Forms.RadioButton
+$RadioButton3 = New-Object System.Windows.Forms.RadioButton
+$ButtonTest = New-Object System.Windows.Forms.Button
+$ButtonSave = New-Object System.Windows.Forms.Button
+$ButtonQuit = New-Object System.Windows.Forms.Button
+$OutputBox = New-Object System.Windows.Forms.TextBox 
+
+# Ajouter le texte aux objets
 $MainForm.Text = "Test de connexion"
+$GroupBox.Text = "Locaux:"
+$RadioButton1.Text = "B-314" 
+$RadioButton2.Text = "B-326"
+$RadioButton3.Text = "B-338"
+$ButtonTest.Text = "Tester"
+$ButtonSave.Text = "Enregistrer"
+$ButtonQuit.Text = "Quitter"
+$OutputBox.Text = ""
+
+# Positionnement des objets
 $MainForm.StartPosition = "CenterScreen"
-$MainForm.Width = 500
-$MainForm.Height = 500
+$GroupBox.Location = New-Object System.Drawing.Size(40,20)
+$RadioButton1.Location = New-Object System.Drawing.Point(15,15) 
+$RadioButton2.Location = New-Object System.Drawing.Point(15,45)
+$RadioButton3.Location = New-Object System.Drawing.Point(15,75)
+$ButtonTest.Location = "180,100"
+$ButtonSave.Location = "280,100"
+$ButtonQuit.Location = "380,100"
+$OutputBox.Location = New-Object System.Drawing.Size(10,150) 
+
+# Dimenssionnement des objets
+$MainForm.Size = New-Object System.Drawing.Size(600,400)
+$MainForm.Width = 600
+$MainForm.Height = 400
+$GroupBox.size = New-Object System.Drawing.Size(100,100)
+$RadioButton1.size = New-Object System.Drawing.Size(80,20) 
+$RadioButton2.size = New-Object System.Drawing.Size(80,20)
+$RadioButton3.size = New-Object System.Drawing.Size(80,20)
+$OutputBox.Size = New-Object System.Drawing.Size(565,200) 
+
+
 # Enlever les bouton Maximiser et Minimiser
 #$MainForm.MaximizeBox = $False
 #$MainForm.MinimizeBox = $False
 
 
-# Menu à bouton radiaux
-# Création d'un groupbox
-$groupBox = New-Object System.Windows.Forms.GroupBox
-$groupBox.Location = New-Object System.Drawing.Size(20,20)
-$groupBox.size = New-Object System.Drawing.Size(100,100)
-$groupBox.text = "Locaux:"
-$MainForm.Controls.Add($groupBox)
-# Créer Les boutons radiaux
-$RadioButton1 = New-Object System.Windows.Forms.RadioButton 
-$RadioButton1.Location = new-object System.Drawing.Point(15,15) 
-$RadioButton1.size = New-Object System.Drawing.Size(80,20) 
-$RadioButton1.Checked = $true 
-$RadioButton1.Text = "B-314" 
-$groupBox.Controls.Add($RadioButton1) 
-
-$RadioButton2 = New-Object System.Windows.Forms.RadioButton
-$RadioButton2.Location = new-object System.Drawing.Point(15,45)
-$RadioButton2.size = New-Object System.Drawing.Size(80,20)
-$RadioButton2.Text = "B-326"
-$groupBox.Controls.Add($RadioButton2)
-
-$RadioButton3 = New-Object System.Windows.Forms.RadioButton
-$RadioButton3.Location = new-object System.Drawing.Point(15,75)
-$RadioButton3.size = New-Object System.Drawing.Size(80,20)
-$RadioButton3.Text = "B-338"
-$groupBox.Controls.Add($RadioButton3)
+$Radiobutton1.Checked = $false
+$Radiobutton2.Checked = $false
+$Radiobutton3.Checked = $false
 
 
-# Création des boutons
-# Bouton Test
-$ButtonTest = New-Object System.Windows.Forms.Button
-$ButtonTest.Text = "Tester"
-$ButtonTest.Location = ‘60,400’
-# Bouton Quit
-$ButtonQuit = New-Object System.Windows.Forms.Button
-$ButtonQuit.Text = "Quitter"
-$ButtonQuit.Location = ‘140,400’
-
-# Ajouter les bouton à la fenêtre principale
+# Ajouter les objets
+$GroupBox.Controls.Add($RadioButton1) 
+$GroupBox.Controls.Add($RadioButton2)
+$GroupBox.Controls.Add($RadioButton3)
+$MainForm.Controls.Add($GroupBox)
 $MainForm.Controls.Add($ButtonTest)
+$MainForm.Controls.Add($ButtonSave)
 $MainForm.Controls.Add($ButtonQuit)
+$MainForm.Controls.Add($OutputBox) 
+
+# Affichage des résultat
+$outputBox.MultiLine = $True 
+$outputBox.ScrollBars = "Vertical" 
+
+
 
 # Évènement relié au bouton Tester
 $ButtonTest.add_Click({
+    $result=$(TestConnexion localhost)
+    $OutputBox.text=$Result
+
+
+<#if ($RadioButton1.Checked -eq $true) {$nrOfPings=1}
+if ($RadioButton2.Checked -eq $true) {$nrOfPings=2}
+if ($RadioButton3.Checked -eq $true) {$nrOfPings=3}
+
+$computer=$DropDownBox.SelectedItem.ToString() #populate the var with the value you selected
+$pingResult=ping $wks -n $nrOfPings | fl | out-string;
+$outputBox.text=$pingResult
+
+
 # Création d'une fenêtre de résultats
 $Popup=New-Object System.Windows.Forms.Form
 $Popup.Size = ‘120,120’ 
@@ -69,6 +132,7 @@ $Label.Location = ‘15,30’
 $Label.Font = ‘Arial,12’
 
 $Popup.Controls.Add($label)
+#>
 
 })
 
@@ -79,6 +143,8 @@ $ButtonQuit.Add_Click({
 
 
 # Affichage de la fenêtre
-$MainForm.ShowDialog()
+$MainForm.ShowDialog() | Out-Null
+
+
 
 
