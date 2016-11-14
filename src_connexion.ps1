@@ -6,11 +6,26 @@
 # Date:             Dimanche 22-11-2016                                        #
 # Version PS:       5.1.14393.206                                              #
 #------------------------------------------------------------------------------#
+<#
+SYNOPSIS
+Describe the function here
+DESCRIPTION
+Describe the function in more detail
+EXAMPLE
+Give an example of how to use it
+EXAMPLE
+Give another example of how to use it
+PARAMETER computername
+The computer name to query. Just one.
+PARAMETER logname
+The name of a file to write failed computer names to. Defaults to errors.txt.
+#>
 #-------------------------------- Importations --------------------------------#
 # Ajouter le type Windows Forms
 Add-Type –AssemblyName System.Windows.Forms 
+
 #--------------------------------- Fonctions ----------------------------------#
-function TestConnexion {
+function Tester-Connexion {
   <#
   .SYNOPSIS
   Describe the function here
@@ -31,8 +46,37 @@ function TestConnexion {
   return $(Test-Connection -Count 1 -Source $source 8.8.8.8)
 }
 
+Function Save-File {
+  <#
+  .SYNOPSIS
+  Describe the function here
+  .DESCRIPTION
+  Describe the function in more detail
+  .EXAMPLE
+  Give an example of how to use it
+  .EXAMPLE
+  Give another example of how to use it
+  .PARAMETER computername
+  The computer name to query. Just one.
+  .PARAMETER logname
+  The name of a file to write failed computer names to. Defaults to errors.txt.
+  #>
+  [void][System.Reflection.Assembly]::LoadWithPartialName("System.windows.forms")
+  $SaveFileDialog = New-Object System.Windows.Forms.SaveFileDialog
+  $SaveFileDialog.Filter = "Text files (*.txt)|*.txt"
+  $SaveFileDialog.InitialDirectory = $(Get-Location)
+  [void]$SaveFileDialog.ShowDialog()
+    #if ($SaveFileDialog.ShowDialog() -eq [System.Windows.Forms.DialogResult]::OK)
+    #{ $SaveFileDialog.FileName }
+}
+#--------------------------------- Variables ----------------------------------#
+#[array]
+
+
 if ($args.Count -eq 0)
-    {Write-Host ok}
+    {Write-Host Graphique}
+elseif ($args.Count -ne 0)
+    {Write-Host Shell}
 
 # Créer les objets
 $MainForm = New-Object System.Windows.Forms.Form
@@ -75,17 +119,23 @@ $GroupBox.size = New-Object System.Drawing.Size(100,100)
 $RadioButton1.size = New-Object System.Drawing.Size(80,20) 
 $RadioButton2.size = New-Object System.Drawing.Size(80,20)
 $RadioButton3.size = New-Object System.Drawing.Size(80,20)
+#$ButtonTest.Location = "180,100"
+$ButtonSave.size = "76,23"
+#$ButtonQuit.Location = "380,100"
 $OutputBox.Size = New-Object System.Drawing.Size(565,200) 
 
-
-# Enlever les bouton Maximiser et Minimiser
+# Paramètres additionnels des objets
 #$MainForm.MaximizeBox = $False
 #$MainForm.MinimizeBox = $False
-
-
+$OutputBox.MultiLine = $true
+$OutputBox.ScrollBars = "Vertical"
+#$OutputBox.MaxLength = "0"
+$OutputBox.ReadOnly = $true
+$OutputBox.BackColor = "White"
 $Radiobutton1.Checked = $false
 $Radiobutton2.Checked = $false
 $Radiobutton3.Checked = $false
+
 
 
 # Ajouter les objets
@@ -98,17 +148,18 @@ $MainForm.Controls.Add($ButtonSave)
 $MainForm.Controls.Add($ButtonQuit)
 $MainForm.Controls.Add($OutputBox) 
 
-# Affichage des résultat
-$outputBox.MultiLine = $True 
-$outputBox.ScrollBars = "Vertical" 
 
-
-
+# Évènements reliés au objets
+$ButtonQuit.Add_Click({$MainForm.Close()})
 # Évènement relié au bouton Tester
-$ButtonTest.add_Click({
-    $result=$(TestConnexion localhost)
+$ButtonTest.Add_Click({
+    $result=$(Tester-Connexion localhost)
     $OutputBox.text=$Result
-
+})
+$ButtonSave.Add_Click({
+    $filename = Save-File
+    $OutputBox.Text | out-file $filename
+})
 
 <#if ($RadioButton1.Checked -eq $true) {$nrOfPings=1}
 if ($RadioButton2.Checked -eq $true) {$nrOfPings=2}
@@ -134,17 +185,7 @@ $Label.Font = ‘Arial,12’
 $Popup.Controls.Add($label)
 #>
 
-})
-
-# Évènement relié au bouton Quitter
-$ButtonQuit.Add_Click({
-    $MainForm.Close()
-})
-
 
 # Affichage de la fenêtre
-$MainForm.ShowDialog() | Out-Null
-
-
-
+[void]$MainForm.ShowDialog()
 
